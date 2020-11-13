@@ -133,6 +133,7 @@
       (do
         (println "Badly formatted files:")
         (println (join "\n" all-long-lines))
+        (println (str "\n" (count all-long-lines)) "long lines found.")
         true))))
 
 (defn trailing-whitespace
