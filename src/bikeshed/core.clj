@@ -23,7 +23,7 @@
   nil)
 
 (defn empty-docstring
-  "" ;; hah! take that lein-bikeshed
+  ""                                                        ;; hah! take that lein-bikeshed
   []
   nil)
 
@@ -78,7 +78,7 @@
   "Reads a file, returning the namespace name"
   [f]
   (try
-    (let [ns-dec (ns-file/read-file-ns-decl f)
+    (let [ns-dec  (ns-file/read-file-ns-decl f)
           ns-name (second ns-dec)]
       (require ns-name)
       ns-name)
@@ -91,7 +91,7 @@
   information about each var in the namespace."
   [f]
   (try
-    (let [ns-dec (ns-file/read-file-ns-decl f)
+    (let [ns-dec  (ns-file/read-file-ns-decl f)
           ns-name (second ns-dec)]
       (require ns-name)
       (->> ns-name
@@ -119,14 +119,14 @@
   max-line-length defaults to 80."
   [source-files & {:keys [max-line-length] :or {max-line-length 80}}]
   (printf "\nChecking for lines longer than %s characters.\n" max-line-length)
-  (let [indexed-lines (fn [f]
-                        (with-open [r (io/reader f)]
-                          (doall
-                           (keep-indexed
-                            (fn [idx line]
-                              (when (> (count line) max-line-length)
-                                (trim (join ":" [(.getAbsolutePath f) (inc idx) line]))))
-                            (line-seq r)))))
+  (let [indexed-lines  (fn [f]
+                         (with-open [r (io/reader f)]
+                           (doall
+                            (keep-indexed
+                             (fn [idx line]
+                               (when (> (count line) max-line-length)
+                                 (trim (join ":" [(.getAbsolutePath f) (inc idx) line]))))
+                             (line-seq r)))))
         all-long-lines (flatten (map indexed-lines source-files))]
     (if (empty? all-long-lines)
       (println "No lines found.")
@@ -139,14 +139,14 @@
   "Complain about lines with trailing whitespace."
   [source-files]
   (println "\nChecking for lines with trailing whitespace.")
-  (let [indexed-lines (fn [f]
-                        (with-open [r (io/reader f)]
-                          (doall
-                           (keep-indexed
-                            (fn [idx line]
-                              (when (re-seq #"\s+$" line)
-                                (trim (join ":" [(.getAbsolutePath f) (inc idx) line]))))
-                            (line-seq r)))))
+  (let [indexed-lines             (fn [f]
+                                    (with-open [r (io/reader f)]
+                                      (doall
+                                       (keep-indexed
+                                        (fn [idx line]
+                                          (when (re-seq #"\s+$" line)
+                                            (trim (join ":" [(.getAbsolutePath f) (inc idx) line]))))
+                                        (line-seq r)))))
         trailing-whitespace-lines (flatten (map indexed-lines source-files))]
     (if (empty? trailing-whitespace-lines)
       (println "No lines found.")
@@ -162,7 +162,7 @@
                         (with-open [r (io/reader f)]
                           (when (re-matches #"^\s*$" (last (line-seq r)))
                             (.getAbsolutePath f))))
-        bad-files (filter some? (map get-last-line source-files))]
+        bad-files     (filter some? (map get-last-line source-files))]
     (if (empty? bad-files)
       (println "No files found.")
       (do (println "Badly formatted files:")
@@ -181,7 +181,7 @@
                               (when (re-seq #"\(with-redefs" line)
                                 (trim (join ":" [(.getAbsolutePath f) (inc idx) line]))))
                             (line-seq r)))))
-        bad-lines (flatten (map indexed-lines source-files))]
+        bad-lines     (flatten (map indexed-lines source-files))]
     (if (empty? bad-lines)
       (println "No with-redefs found.")
       (do (println "with-redefs found in source directory:")
@@ -193,19 +193,19 @@
   [project verbose]
   (println "\nChecking whether you keep up with your docstrings.")
   (try
-    (let [source-files (mapcat #(-> % io/file
-                                    ns-find/find-clojure-sources-in-dir)
-                               (flatten (get-all project :source-paths)))
+    (let [source-files   (mapcat #(-> % io/file
+                                      ns-find/find-clojure-sources-in-dir)
+                                 (flatten (get-all project :source-paths)))
           all-namespaces (->> source-files
                               (map load-namespace)
                               (remove nil?))
-          all-publics (mapcat read-namespace source-files)
-          no-docstrings (->> all-publics
-                             (mapcat has-doc)
-                             (filter #(= (val %) false)))
-          no-ns-doc (->> all-namespaces
-                         (mapcat has-ns-doc)
-                         (filter #(= (val %) false)))]
+          all-publics    (mapcat read-namespace source-files)
+          no-docstrings  (->> all-publics
+                              (mapcat has-doc)
+                              (filter #(= (val %) false)))
+          no-ns-doc      (->> all-namespaces
+                              (mapcat has-ns-doc)
+                              (filter #(= (val %) false)))]
       (printf
        "%d/%d [%.2f%%] namespaces have docstrings.\n"
        (- (count all-namespaces) (count no-ns-doc))
@@ -279,40 +279,40 @@
 (defn visible-project-files
   "Given a project and list of keys (such as `:source-paths` or `:test-paths`,
   return all source files underneath those directories."
-  [project & paths-keys]
+  [source-paths]
   (remove
    #(starts-with? (.getName %) ".")
    (mapcat
     #(-> % io/file
          (find-sources-in-dir [".clj" ".cljs" ".cljc" ".cljx"]))
-    (flatten (apply get-all project paths-keys)))))
+    source-paths)))
 
 (defn bikeshed
   "Bikesheds your project with totally arbitrary criteria. Returns true if the
   code has been bikeshedded and found wanting."
   [project {:keys [check? verbose max-line-length]}]
-  (let [all-files (visible-project-files project :source-paths :test-paths)
-        source-files (visible-project-files project :source-paths)
-        results {:long-lines           (when (check? :long-lines)
-                                         (if max-line-length
-                                           (long-lines all-files
-                                                       :max-line-length max-line-length)
-                                           (long-lines all-files)))
-                 :trailing-whitespace  (when (check? :trailing-whitespace)
-                                         (trailing-whitespace all-files))
-                 :trailing-blank-lines (when (check? :trailing-blank-lines)
-                                         (trailing-blank-lines all-files))
-                 :var-redefs           (when (check? :var-redefs)
-                                         (bad-roots source-files))
-                 :bad-methods          (when (check? :docstrings)
-                                         (missing-doc-strings project verbose))
-                 :name-collisions      (when (check? :name-collisions)
-                                         (check-all-arguments project))}
-        failures (->> results
-                      (filter second)
-                      (map first)
-                      (remove #{:bad-methods})
-                      (map name))]
+  (let [all-files    (visible-project-files (:source-paths project))
+        source-files (visible-project-files (:source-paths project))
+        results      {:long-lines           (when (check? :long-lines)
+                                              (if max-line-length
+                                                (long-lines all-files
+                                                            :max-line-length max-line-length)
+                                                (long-lines all-files)))
+                      :trailing-whitespace  (when (check? :trailing-whitespace)
+                                              (trailing-whitespace all-files))
+                      :trailing-blank-lines (when (check? :trailing-blank-lines)
+                                              (trailing-blank-lines all-files))
+                      :var-redefs           (when (check? :var-redefs)
+                                              (bad-roots source-files))
+                      :bad-methods          (when (check? :docstrings)
+                                              (missing-doc-strings project verbose))
+                      :name-collisions      (when (check? :name-collisions)
+                                              (check-all-arguments project))}
+        failures     (->> results
+                          (filter second)
+                          (map first)
+                          (remove #{:bad-methods})
+                          (map name))]
     (if (empty? failures)
       (println "\nSuccess")
       (do (println "\nThe following checks failed:\n *"
