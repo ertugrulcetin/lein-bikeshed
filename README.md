@@ -42,7 +42,15 @@ Use -v to list functions without docstrings")")))
 Checking for arguments colliding with clojure.core functions.
 #'bikeshed.core/colliding-arguments: 'map', 'first' are colliding with core functions
 
+Checking for functions with more than 50 lines.
+Badly formatted files:
+/Users/ertugrulcetin/IdeaProjects/reader-app/src/reader_app/core.clj:3
+/Users/ertugrulcetin/IdeaProjects/reader-app/src/reader_app/core.clj:20
+/Users/ertugrulcetin/IdeaProjects/reader-app/src/reader_app/core.clj:34
+
+
 The following checks failed:
+ * long-fns
  * long-lines
  * trailing-whitespace
  * trailing-blank-lines
