@@ -8,7 +8,7 @@ should feel bad.
 Add to your ~/.lein/profiles.clj:
 
 ```clojure
-{:user {:plugins [[lein-bikeshed "0.5.2"]]}}
+{:user {:plugins [[ertu/lein-bikeshed "0.1.12"]]}}
 ```
 
 Just run `lein bikeshed` on your project:
@@ -59,6 +59,7 @@ The following checks failed:
 | -v, --no-verbose, --verbose | false   | Display missing doc strings |
 | -m, --max-line-length       | 80      | Max line length             |
 | -l, --long-lines            | true    | Check for lines with length > max line length |
+| -f, --long-fns            | true    | Check for functions with lines > max function lines |
 | -w, --trailing-whitespace   | true    | Check for trailing whitespace |
 | -b, --trailing-blank-lines  | true    | Check for trailing blank lines |
 | -r, --var-redefs            | true    | Check for redefined root vars |

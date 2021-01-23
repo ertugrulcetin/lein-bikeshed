@@ -4,6 +4,8 @@
             [clojure.java.io :as io]
             [clojure.tools.namespace.file :as ns-file]
             [clojure.tools.namespace.find :as ns-find]
+            [clojure.tools.reader :as reader]
+            [clojure.tools.reader.reader-types :as rt]
             [clojure.string :as str])
   (:import (java.io BufferedReader StringReader File)))
 
@@ -134,6 +136,30 @@
         (println "Badly formatted files:")
         (println (join "\n" all-long-lines))
         (println (str "\n" (count all-long-lines)) "long lines found.")
+        true))))
+
+(defn long-fns
+  "Complain about functions longer than <max-fn-lines> lines.
+   max-fn-lines defaults to 50."
+  [source-files & {:keys [max-fn-lines] :or {max-fn-lines 50}}]
+  (printf "\nChecking for functions with more than %s lines.\n" max-fn-lines)
+  (let [indexed-lines (fn [f]
+                        (let [rdr   (rt/indexing-push-back-reader (str "(" (slurp f) ")"))
+                              EOF   (Object.)
+                              forms (reader/read {:eof       EOF
+                                                  :read-cond :allow
+                                                  :features  #{:clj :cljs}} rdr)]
+                          (keep (fn [form]
+                                  (let [m (meta form)]
+                                    (when (> (inc (- (:end-line m) (:line m))) max-fn-lines)
+                                      (trim (join ":" [(.getAbsolutePath f) (:line m)]))))) forms)))
+        all-long-fns  (flatten (map indexed-lines source-files))]
+    (if (empty? all-long-fns)
+      (println "No long functions found.")
+      (do
+        (println "Badly formatted files:")
+        (println (join "\n" all-long-fns))
+        (println (str "\n" (count all-long-fns)) "long functions found.")
         true))))
 
 (defn trailing-whitespace
@@ -291,14 +317,17 @@
 (defn bikeshed
   "Bikesheds your project with totally arbitrary criteria. Returns true if the
   code has been bikeshedded and found wanting."
-  [project {:keys [check? verbose max-line-length]}]
+  [project {:keys [check? verbose max-line-length max-fn-lines]}]
   (let [all-files    (visible-project-files (:source-paths project))
         source-files (visible-project-files (:source-paths project))
         results      {:long-lines           (when (check? :long-lines)
                                               (if max-line-length
-                                                (long-lines all-files
-                                                            :max-line-length max-line-length)
+                                                (long-lines all-files :max-line-length max-line-length)
                                                 (long-lines all-files)))
+                      :long-fns             (when (check? :long-fns)
+                                              (if max-fn-lines
+                                                (long-fns all-files :max-fn-lines max-fn-lines)
+                                                (long-fns all-files)))
                       :trailing-whitespace  (when (check? :trailing-whitespace)
                                               (trailing-whitespace all-files))
                       :trailing-blank-lines (when (check? :trailing-blank-lines)

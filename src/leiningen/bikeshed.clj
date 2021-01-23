@@ -39,6 +39,10 @@
           "If true, check for trailing blank lines"
           :parse-fn #(Boolean/valueOf %)
           :default true]
+         ["-f" "--long-fns"
+          "If true, check for long functions"
+          :parse-fn #(Boolean/valueOf %)
+          :default true]
          ["-w" "--trailing-whitespace"
           "If true, check for trailing whitespace"
           :parse-fn #(Boolean/valueOf %)
@@ -63,7 +67,7 @@
           :default nil
           :parse-fn #(mapv keyword (str/split % #","))])
         lein-opts (:bikeshed project)
-        project (project/merge-profiles project [(check-namespace-decls-profile project)])]
+        project   (project/merge-profiles project [(check-namespace-decls-profile project)])]
     (if (:help-me opts)
       (println banner)
       (lein/eval-in-project
@@ -72,6 +76,8 @@
              '~project
              {:max-line-length (or (:max-line-length ~opts)
                                    (:max-line-length ~lein-opts))
+              :max-fn-lines    (or (:max-fn-lines ~opts)
+                                   (:max-fn-lines ~lein-opts))
               :verbose         (:verbose ~opts)
               :check?          #(get (merge ~lein-opts ~opts) % true)})
           (System/exit -1)

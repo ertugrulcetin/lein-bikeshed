@@ -1,4 +1,4 @@
-(defproject ertu/lein-bikeshed "0.1.11"
+(defproject ertu/lein-bikeshed "0.1.12"
   :description (str "A Leiningen plugin designed to tell you your code is bad, "
                     "and that you should feel bad")
   :url "https://github.com/dakrone/lein-bikeshed"
@@ -6,4 +6,5 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :eval-in :leiningen
   :dependencies [[org.clojure/tools.cli "0.3.5"]
-                 [org.clojure/tools.namespace "0.2.6"]])
+                 [org.clojure/tools.namespace "0.2.6"]
+                 [org.clojure/tools.reader "1.3.4"]])
