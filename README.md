@@ -8,7 +8,7 @@ should feel bad.
 Add to your ~/.lein/profiles.clj:
 
 ```clojure
-{:user {:plugins [[ertu/lein-bikeshed "0.1.12"]]}}
+{:user {:plugins [[ertu/lein-bikeshed "0.1.13"]]}}
 ```
 
 Just run `lein bikeshed` on your project:
@@ -87,6 +87,14 @@ You can also add the `:bikeshed` option map directly to your `project.clj`:
              :var-redefs false
              :name-collisions false}
   :dependencies [[clj-http "3.3.0"]])
+```
+
+### Ignore long functions
+```clj
+;; You can ignore long fns with providing :ignore-long-fn? meta
+(defn ^{:ignore-long-fn? true} my-long-fn 
+  [args]
+  ...)
 ```
 
 ## License

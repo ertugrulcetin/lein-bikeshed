@@ -138,6 +138,10 @@
         (println (str "\n" (count all-long-lines)) "long lines found.")
         true))))
 
+(defn- ignore-fn? [form]
+  (when ('#{def defonce defn defmacro} (first form))
+    (-> form second meta :ignore-long-fn?)))
+
 (defn long-fns
   "Complain about functions longer than <max-fn-lines> lines.
    max-fn-lines defaults to 50."
@@ -151,7 +155,9 @@
                                                   :features  #{:clj :cljs}} rdr)]
                           (keep (fn [form]
                                   (let [m (meta form)]
-                                    (when (> (inc (- (:end-line m) (:line m))) max-fn-lines)
+                                    (when (and (not ('#{comment ns} (first form)))
+                                               (not (ignore-fn? form))
+                                               (> (inc (- (:end-line m) (:line m))) max-fn-lines))
                                       (trim (join ":" [(.getAbsolutePath f) (:line m)]))))) forms)))
         all-long-fns  (flatten (map indexed-lines source-files))]
     (if (empty? all-long-fns)

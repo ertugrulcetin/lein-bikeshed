@@ -35,6 +35,8 @@
           :flag true :default false]
          ["-m" "--max-line-length" "Max line length"
           :parse-fn #(Integer/parseInt %)]
+         ["-fl" "--max-fn-lines" "Max function lines"
+          :parse-fn #(Integer/parseInt %)]
          ["-l" "--long-lines"
           "If true, check for trailing blank lines"
           :parse-fn #(Boolean/valueOf %)

@@ -1,4 +1,4 @@
-(defproject ertu/lein-bikeshed "0.1.12"
+(defproject ertu/lein-bikeshed "0.1.13"
   :description (str "A Leiningen plugin designed to tell you your code is bad, "
                     "and that you should feel bad")
   :url "https://github.com/dakrone/lein-bikeshed"
